@@ -1,0 +1,90 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{deploymentName}}
+  namespace: {{namespace}}
+spec:
+  replicas: {{replicas}}
+  revisionHistoryLimit: 6
+  selector:
+    matchLabels:
+      application: {{deploymentName}}
+  strategy:
+    type: RollingUpdate
+    rollingUpdate: { maxSurge: 0,  maxUnavailable: 1 }
+  template:
+    metadata:
+      labels:
+        application: {{deploymentName}}
+    spec:
+      affinity:
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            - labelSelector:
+                matchExpressions:
+                  - key: application
+                    operator: In
+                    values:
+                      - {{deploymentName}}
+              topologyKey: kubernetes.io/hostname
+      securityContext:
+        runAsUser: 600
+      imagePullSecrets:
+        - name: nexus
+      containers:
+        - name: {{deploymentName}}
+          image: {{dockerRepoKube}}/{{imagePrefix}}/{{projectName}}:{{version}}
+          ports:
+            - name: http
+              containerPort: 8080
+          livenessProbe:
+            httpGet: { path: '/healthz', port: 8080 }
+            initialDelaySeconds: 20
+            periodSeconds: 10
+            failureThreshold: 5
+          readinessProbe:
+            httpGet: { path: '/healthz', port: 8080 }
+            initialDelaySeconds: 20
+            periodSeconds: 10
+            failureThreshold: 5
+          resources:
+            requests:
+              cpu: {{request_cpu}}
+              memory: {{request_mem}}
+            limits:
+              cpu: {{limit_cpu}}
+              memory: {{limit_mem}}
+
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: {{deploymentName}}-service
+  namespace: {{namespace}}
+spec:
+  selector:
+    application: {{deploymentName}}
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 8080
+
+---
+# API path rules (service-crm, service-offer) for this host are decided in P0 and added here.
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: {{deploymentName}}-ingress
+  namespace: {{namespace}}
+spec:
+  rules:
+    - host: crm-v2.kredit{{clusterBaseUrl}}
+      http:
+        paths:
+          - pathType: Prefix
+            path: "/"
+            backend:
+              service:
+                name: {{deploymentName}}-service
+                port:
+                  number: 80

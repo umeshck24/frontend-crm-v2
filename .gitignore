@@ -1,0 +1,36 @@
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+node_modules
+dist
+dist-ssr
+*.local
+
+# Editor directories and files
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
+.idea/*
+!.idea/externalDependencies.xml
+!.idea/OxfmtSettings.xml
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+.vite/
+coverage
+
+# Local env (committed: .env.dist, .env.develop, .env.staging, .env.production)
+.env
+
+# Gradle wrapper (used by the shared Jenkins pipeline); the wrapper jar is not committed
+/.gradle
+*.jar

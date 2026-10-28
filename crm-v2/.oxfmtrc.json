@@ -1,0 +1,6 @@
+{
+  "$schema": "./node_modules/oxfmt/configuration_schema.json",
+  "sortImports": {},
+  "sortTailwindcss": { "stylesheet": "./src/index.css" },
+  "ignorePatterns": ["*.md", "components.json", "pnpm-lock.yaml", "src/api/crm"]
+}
